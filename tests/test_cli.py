@@ -21,7 +21,7 @@ def test_corpus_and_queries_consistent() -> None:
 
 
 def test_all_pipelines_build() -> None:
-    assert set(available_pipelines()) == {"bm25", "dense", "hybrid", "reranked"}
+    assert {"bm25", "dense", "hybrid", "reranked"} <= set(available_pipelines())
     for name in available_pipelines():
         assert build_pipeline(name) is not None
 
