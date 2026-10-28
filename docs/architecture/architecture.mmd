@@ -1,5 +1,5 @@
 ---
-title: System Architecture - Hybrid Rag
+title: System Architecture - Hybrid RAG
 config:
   theme: base
   themeVariables:
@@ -15,24 +15,30 @@ flowchart LR
     classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef external fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
-    classDef danger   fill:#EF4444,stroke:#1E293B,color:#ffffff,stroke-width:1px;
 
-    User([User]):::external
+    Docs[(Documents)]:::data
+    Query([Query]):::external
 
-    subgraph Application["Application Service"]
-        API[API Layer]:::core
-        Core[Core Engine]:::core
-        Evaluation[Evaluation Harness]:::core
+    subgraph Index["Indexing"]
+        Chunker[Chunker]:::core
     end
 
-    Cache[(Semantic Cache)]:::data
-    Store[(Datastore / Index)]:::data
-    LLM{{LLM Provider}}:::external
+    subgraph Retrieval["Retrieval"]
+        BM25[BM25]:::core
+        Dense[TF-IDF Dense]:::core
+        Fusion[Reciprocal Rank Fusion]:::core
+        Rerank[Reranker]:::core
+    end
 
-    User -->|request| API
-    API --> Core
-    Core -->|lookup| Cache
-    Core -->|retrieve| Store
-    Core -->|completion| LLM
-    Core -.->|traces/metrics| Evaluation
-    Core -->|response| User
+    Eval[Evaluation harness]:::core
+
+    Docs --> Chunker
+    Chunker -->|chunks| BM25
+    Chunker -->|chunks| Dense
+    Query --> BM25
+    Query --> Dense
+    BM25 -->|ranked| Fusion
+    Dense -->|ranked| Fusion
+    Fusion -->|candidates| Rerank
+    Rerank -->|top-k| Query
+    Rerank -.->|recall, MRR, nDCG| Eval
