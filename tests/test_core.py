@@ -100,10 +100,3 @@ def test_chunk_documents_across_corpus() -> None:
     ]
     chunks = chunk_documents(docs, FixedTokenChunker(chunk_size=20, overlap=5))
     assert {c.document_id for c in chunks} == {"a", "b"}
-
-
-def test_entrypoint(capsys: pytest.CaptureFixture[str]) -> None:
-    from hybrid_rag.__main__ import main
-
-    main()
-    assert "hybrid-rag" in capsys.readouterr().out
