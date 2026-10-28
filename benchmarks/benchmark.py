@@ -15,9 +15,28 @@ from hybrid_rag.core import Chunk
 from hybrid_rag.pipelines import available_pipelines, build_pipeline
 
 _WORDS = [
-    "neural", "network", "photosynthesis", "gravity", "retrieval", "fusion", "ranking",
-    "embedding", "vector", "quantum", "revolution", "mitochondria", "evolution", "cell",
-    "energy", "sunlight", "ocean", "mountain", "pigment", "spacetime", "glucose", "oxygen",
+    "neural",
+    "network",
+    "photosynthesis",
+    "gravity",
+    "retrieval",
+    "fusion",
+    "ranking",
+    "embedding",
+    "vector",
+    "quantum",
+    "revolution",
+    "mitochondria",
+    "evolution",
+    "cell",
+    "energy",
+    "sunlight",
+    "ocean",
+    "mountain",
+    "pigment",
+    "spacetime",
+    "glucose",
+    "oxygen",
 ]
 
 
