@@ -1,15 +1,12 @@
-"""Entrypoint: `python -m hybrid_rag`."""
+"""Entrypoint placeholder; the full CLI is added with the retrieval pipeline."""
 
 from __future__ import annotations
 
 from hybrid_rag import __version__
-from hybrid_rag.configuration import settings
 
 
 def main() -> None:
-    header = f"Hybrid Rag v{__version__}"
-    status = f"environment={settings.environment}, seed={settings.seed}"
-    print(f"{header} - {status}")
+    print(f"hybrid-rag v{__version__}")
 
 
 if __name__ == "__main__":
