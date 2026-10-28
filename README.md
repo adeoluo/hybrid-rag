@@ -42,15 +42,37 @@ harness** (recall@k, precision@k, MRR, nDCG). See the [ADRs](docs/adr/) for key 
 
 ## Components
 
-- **Chunking** - `FixedTokenChunker` (overlapping windows) and `SentenceChunker`.
-- **BM25** - Okapi BM25 with configurable `k1` and `b`, implemented directly.
-- **Dense** - a TF-IDF retriever that learns its vocabulary and idf from the corpus and
-  ranks by cosine similarity (the "trained embedding").
-- **Hybrid** - reciprocal rank fusion of any set of retrievers (combines ranks, not
+- **Chunking** - five strategies: `FixedTokenChunker` (overlapping windows),
+  `SentenceChunker`, `RecursiveChunker` (separator priority), and `ParagraphChunker`.
+- **Retrievers (5)** - Okapi `BM25Retriever`, a trained `TfidfDenseRetriever`, a
+  typo-robust `CharNgramRetriever` (character n-grams), an exact-match `PhraseRetriever`,
+  and the fusing `HybridRetriever`.
+- **Query processing** - `SynonymExpander` and pseudo-relevance feedback (`expand_with_prf`)
+  to improve recall before retrieval runs.
+- **Hybrid fusion** - reciprocal rank fusion of any set of retrievers (combines ranks, not
   incomparable scores).
-- **Reranking** - a cross-encoder-style `LexicalOverlapReranker` and a `RerankedRetriever`
-  that composes retrieve-then-rerank into one retriever.
-- **Evaluation** - recall@k, precision@k, MRR, MAP, DCG/nDCG, and an aggregating harness.
+- **Reranking** - a cross-encoder-style `LexicalOverlapReranker`, an `MMRReranker` for
+  diversity, and a `RerankedRetriever` that composes retrieve-then-rerank into one retriever.
+- **RAG** - `build_context` assembles cited, budget-bounded context with snippet
+  highlighting; `ChunkStore` persists a chunked corpus to disk.
+- **Evaluation** - recall@k, precision@k, MRR, MAP, DCG/nDCG, success@k, R-precision, an
+  aggregating harness, and `compare_retrievers` with a paired-bootstrap significance test.
+
+## Performance
+
+> Measured over a 500-chunk synthetic corpus and 200 queries (`uv run python benchmarks/benchmark.py`).
+
+| Pipeline | Index build (ms) | Queries / sec |
+|---|---:|---:|
+| `bm25` | 4.5 | 1,696 |
+| `dense` | 8.7 | 2,241 |
+| `hybrid` | 13.2 | 940 |
+| `reranked` | 12.9 | 819 |
+| `hybrid-all` (4-way fusion) | 47.6 | 330 |
+| `mmr` (diversity) | 13.0 | 518 |
+
+All retrieval is pure-Python and in-memory, so hundreds to thousands of queries per second
+require no external service.
 
 ## Results
 
@@ -62,12 +84,16 @@ harness** (recall@k, precision@k, MRR, nDCG). See the [ADRs](docs/adr/) for key 
 | `dense` | 1.000 | 0.611 | 0.967 | 0.975 |
 | `hybrid` | 1.000 | 0.611 | 0.967 | 0.975 |
 | `reranked` | 1.000 | 0.611 | 0.967 | 0.975 |
+| `hybrid-all` | 1.000 | 0.333 | 0.967 | 0.975 |
+| `mmr` | 0.933 | 0.589 | 0.933 | 0.933 |
 
-On this clean, lexically-rich corpus the pipelines perform comparably: each finds the
-relevant passage, and the harness confirms it with calibrated metrics. The point the
-numbers make is methodological - **every pipeline is measured identically**, so a genuine
-improvement (a better reranker, real neural embeddings) would show up immediately as a
-metric gain. See [limitations](#limitations) for why lexical methods converge here.
+The six pipelines are measured identically on the same labeled queries. The lexical
+methods converge on recall here, while the differences surface in precision and MRR: the
+4-way `hybrid-all` fusion trades precision for breadth, and `mmr` trades a little recall
+for result diversity. The methodological point stands - **a genuine improvement (a better
+reranker, real neural embeddings) would show up immediately as a metric gain**, and
+`compare_retrievers` reports whether any such difference is statistically significant. See
+[limitations](#limitations) for why the lexical methods converge on this corpus.
 
 ## Quickstart
 
