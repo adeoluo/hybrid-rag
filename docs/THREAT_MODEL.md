@@ -1,21 +1,25 @@
-# Threat Model - Hybrid Rag
+# Threat Model - Hybrid RAG
 
 ## Assets
-- What's worth protecting (data, keys, model, user trust, budget).
+
+- Integrity of the retrieved results and the reported metrics.
 
 ## Trust boundaries
-- Where untrusted input crosses into the system (reference the architecture diagram).
 
-## Threats (STRIDE + LLM-specific)
+- **Documents and queries are untrusted text.** They are tokenized and scored, never
+  executed; there is no code path from text to execution.
+
+## Threats and mitigations
 
 | Threat | Vector | Impact | Mitigation |
 |---|---|---|---|
-| Prompt injection | Untrusted content in context / tools | Data exfiltration, unsafe actions | Input/output filtering, tool allow-list, least privilege |
-| Jailbreak | Adversarial user prompt | Policy bypass | System-prompt hardening, output classifier, refusal evaluation |
-| Data exfiltration | Model echoes secrets / PII | Privacy breach | Secret scanning, output redaction, no secrets in context |
-| Excessive cost | Unbounded loops / large inputs | $ blowout | Token/step budgets, rate limits, timeouts |
-| Tool abuse | Agent calls dangerous tool | Destructive action | Approval gates, sandboxing, dry-run |
-| Supply chain | Malicious dependency | Code execution | Pinned dependencies, Dependabot, SBOM |
+| Index poisoning | Malicious documents added to the corpus | Skewed retrieval | Retrieval is read-only over indexed text; callers control what is indexed |
+| Resource exhaustion | Very large corpus or query | Memory / time blowup | In-memory index documented as demonstration-scale; k bounds result size |
+| Misleading metrics | Mislabeled query set | Overstated quality | Labeled data is bundled and inspectable; metrics are standard and reproducible |
+| Supply-chain compromise | Malicious dependency | Code execution | Zero runtime dependencies; Dependabot and CodeQL in continuous integration |
 
 ## Residual risk
-- What remains after mitigations and why it's acceptable.
+
+The dense retriever cannot detect semantically-phrased adversarial queries that avoid all
+corpus vocabulary; this is a capability limit of lexical retrieval, documented in the
+README, not a security control.
