@@ -10,8 +10,15 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from hybrid_rag.core.retriever import Retriever
+from hybrid_rag.mmr import MMRReranker
 from hybrid_rag.reranking import LexicalOverlapReranker, RerankedRetriever
-from hybrid_rag.retrievers import BM25Retriever, HybridRetriever, TfidfDenseRetriever
+from hybrid_rag.retrievers import (
+    BM25Retriever,
+    CharNgramRetriever,
+    HybridRetriever,
+    PhraseRetriever,
+    TfidfDenseRetriever,
+)
 
 
 def _hybrid() -> Retriever:
@@ -22,11 +29,23 @@ def _reranked() -> Retriever:
     return RerankedRetriever(_hybrid(), LexicalOverlapReranker(), candidate_pool=20)
 
 
+def _hybrid_all() -> Retriever:
+    return HybridRetriever(
+        [BM25Retriever(), TfidfDenseRetriever(), CharNgramRetriever(), PhraseRetriever()]
+    )
+
+
+def _mmr() -> Retriever:
+    return RerankedRetriever(_hybrid(), MMRReranker(diversity=0.3), candidate_pool=20)
+
+
 BUILDERS: dict[str, Callable[[], Retriever]] = {
     "bm25": BM25Retriever,
     "dense": TfidfDenseRetriever,
     "hybrid": _hybrid,
     "reranked": _reranked,
+    "hybrid-all": _hybrid_all,
+    "mmr": _mmr,
 }
 
 
