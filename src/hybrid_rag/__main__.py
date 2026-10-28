@@ -1,13 +1,8 @@
-"""Entrypoint placeholder; the full CLI is added with the retrieval pipeline."""
+"""Enable ``python -m hybrid_rag`` to invoke the command-line interface."""
 
 from __future__ import annotations
 
-from hybrid_rag import __version__
-
-
-def main() -> None:
-    print(f"hybrid-rag v{__version__}")
-
+from hybrid_rag.cli import main
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
