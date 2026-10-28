@@ -16,6 +16,9 @@ dev = [
     "pytest-cov>=5.0",
 ]
 
+[project.scripts]
+hybrid-rag = "hybrid_rag.cli:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
