@@ -1,27 +1,40 @@
-# Model / System Card - Hybrid Rag
+# System Card - Hybrid RAG
 
 ## Overview
-- **What it is:** 1 - 2 sentences.
-- **Base model(s):** e.g., Claude 3.5 Sonnet / GPT-4o / Llama-3-8B / from-scratch.
-- **Version & date:**
+
+- **What it is:** a from-scratch hybrid retrieval system - BM25, a trained TF-IDF dense
+  retriever, reciprocal rank fusion, and reranking - with a retrieval evaluation suite.
+- **What it is not:** a generator. This is the retrieval half of a RAG system; it returns
+  ranked passages, not generated answers.
+- **Version:** 0.1.0.
 
 ## Intended use
-- **Primary use cases:**
-- **Primary users:**
+
+- **Primary use cases:** learning how hybrid retrieval and its evaluation work; a
+  from-scratch reference for BM25, TF-IDF, rank fusion, and IR metrics; a measurement
+  harness for comparing retriever configurations.
+- **Primary users:** engineers and researchers building or studying retrieval systems.
 
 ## Out-of-scope / prohibited use
-- Where this should **not** be used, and why.
+
+- Not tuned for production-scale corpora; the index is in-memory.
+- The bundled corpus is a demonstration, not a benchmark; do not quote its numbers as
+  competitive retrieval results.
 
 ## Performance
-- Summary of key metrics (link to [`EVALUATION_REPORT.md`](EVALUATION_REPORT.md)).
-- Known performance disparities across inputs / subgroups.
 
-## Risks & limitations
-- Failure modes, biases, hallucination behavior, brittleness.
-- **Dual-use / misuse considerations.**
+See the ablation in the README and [EVALUATION_REPORT.md](EVALUATION_REPORT.md). On the
+bundled corpus every pipeline reaches recall@3 = 1.0 and MRR about 0.97.
+
+## Risks and limitations
+
+- The dense retriever is lexical (TF-IDF); it misses zero-overlap paraphrases.
+- In-memory index does not scale to very large corpora without a persistent store.
 
 ## Safety mitigations
-- Guardrails, filtering, human-in-the-loop, abstention behavior.
+
+- Deterministic, offline, reproducible; no network calls and no external data.
 
 ## Environmental / cost footprint
-- Compute used; approximate cost / energy where relevant.
+
+Indexing and evaluating the bundled corpus runs on CPU in well under a second, at no cost.
