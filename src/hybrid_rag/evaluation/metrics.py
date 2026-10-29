@@ -1,4 +1,4 @@
-"""Retrieval quality metrics, implemented from first principles.
+"""Retrieval quality metrics, implemented from scratch.
 
 Retrieval is judged by the ranking it returns, not a single accuracy number. This module
 provides the standard information-retrieval metrics, each taking the ranked list of
