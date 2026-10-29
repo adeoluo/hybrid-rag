@@ -8,7 +8,7 @@
 - **Corpus:** 14 short passages, chunked one-per-passage (`FixedTokenChunker`, size 200).
 - **Queries:** 15 labeled natural-language queries, each with one relevant passage.
 - **Metrics:** recall@k, precision@k, mean reciprocal rank (MRR), nDCG@k - all implemented
-  from first principles as pure functions over chunk ids.
+  from scratch as pure functions over chunk ids.
 - **Pipelines:** `bm25`, `dense` (TF-IDF), `hybrid` (reciprocal rank fusion), `reranked`
   (hybrid + lexical-overlap reranker).
 
