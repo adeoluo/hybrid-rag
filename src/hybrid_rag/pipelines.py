@@ -17,12 +17,12 @@ from hybrid_rag.retrievers import (
     CharNgramRetriever,
     HybridRetriever,
     PhraseRetriever,
-    TfidfDenseRetriever,
+    TfidfRetriever,
 )
 
 
 def _hybrid() -> Retriever:
-    return HybridRetriever([BM25Retriever(), TfidfDenseRetriever()])
+    return HybridRetriever([BM25Retriever(), TfidfRetriever()])
 
 
 def _reranked() -> Retriever:
@@ -31,7 +31,7 @@ def _reranked() -> Retriever:
 
 def _hybrid_all() -> Retriever:
     return HybridRetriever(
-        [BM25Retriever(), TfidfDenseRetriever(), CharNgramRetriever(), PhraseRetriever()]
+        [BM25Retriever(), TfidfRetriever(), CharNgramRetriever(), PhraseRetriever()]
     )
 
 
@@ -41,7 +41,7 @@ def _mmr() -> Retriever:
 
 BUILDERS: dict[str, Callable[[], Retriever]] = {
     "bm25": BM25Retriever,
-    "dense": TfidfDenseRetriever,
+    "tfidf": TfidfRetriever,
     "hybrid": _hybrid,
     "reranked": _reranked,
     "hybrid-all": _hybrid_all,

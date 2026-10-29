@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from hybrid_rag.core import Chunk
-from hybrid_rag.retrievers import BM25Retriever, TfidfDenseRetriever
+from hybrid_rag.retrievers import BM25Retriever, TfidfRetriever
 
 
 def _corpus() -> list[Chunk]:
@@ -65,7 +65,7 @@ def test_bm25_respects_k() -> None:
 # Dense TF-IDF
 # --------------------------------------------------------------------------- #
 def test_dense_retrieves_relevant_first() -> None:
-    retriever = TfidfDenseRetriever()
+    retriever = TfidfRetriever()
     retriever.index(_corpus())
     results = retriever.retrieve("machine learning datasets", k=3)
     assert results
@@ -73,24 +73,24 @@ def test_dense_retrieves_relevant_first() -> None:
 
 
 def test_dense_learns_vocabulary() -> None:
-    retriever = TfidfDenseRetriever()
+    retriever = TfidfRetriever()
     retriever.index(_corpus())
     assert retriever.embedding_dimension() > 0
 
 
 def test_dense_empty_index() -> None:
-    assert TfidfDenseRetriever().retrieve("anything") == []
+    assert TfidfRetriever().retrieve("anything") == []
 
 
 def test_dense_out_of_vocabulary_query() -> None:
-    retriever = TfidfDenseRetriever()
+    retriever = TfidfRetriever()
     retriever.index(_corpus())
     assert retriever.retrieve("xylophone") == []
 
 
 def test_dense_cosine_is_symmetric_scale_invariant() -> None:
     # A query that repeats a chunk's words should rank that chunk first.
-    retriever = TfidfDenseRetriever()
+    retriever = TfidfRetriever()
     retriever.index(_corpus())
     results = retriever.retrieve("cat mat fire", k=1)
     assert results[0].chunk.id == "c0"

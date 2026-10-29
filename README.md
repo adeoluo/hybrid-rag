@@ -1,7 +1,7 @@
 <h1 align="center">Hybrid RAG</h1>
 
 <p align="center">
-  <em>Production hybrid retrieval built from scratch: BM25 and a trained TF-IDF dense retriever, fused and reranked, with a rigorous retrieval evaluation suite.</em>
+  <em>Production hybrid retrieval built from scratch: BM25 and a TF-IDF vector retriever, fused and reranked, with a rigorous retrieval evaluation suite.</em>
 </p>
 
 <p align="center">
@@ -18,9 +18,7 @@
 ## Motivation
 
 Most retrieval-augmented generation tutorials import an embedding model and a vector
-database and call it done. This project builds the retrieval stack **from first
-principles** so the mechanics are visible: BM25's ranking function, a dense retriever that
-*learns* its vector space from the corpus, rank fusion, reranking, and - most importantly -
+database and call it done. This project builds the retrieval stack **from scratch** so the mechanics are visible: BM25's ranking function, a TF-IDF vector retriever fit from the corpus, rank fusion, reranking, and - most importantly -
 the **evaluation** that tells you whether any of it works. It has **zero runtime
 dependencies** and runs fully offline.
 
@@ -35,7 +33,7 @@ labeled query set, and the pipelines are compared head to head in an ablation.
 </p>
 
 Documents are split by a **chunker**; each chunk is indexed by **BM25** (sparse, lexical)
-and a **TF-IDF dense** retriever (which learns its idf weights from the corpus). A query is
+and a **TF-IDF** vector retriever (sparse, with idf weights fit from the corpus). A query is
 run through both; their rankings are merged by **reciprocal rank fusion**; a **reranker**
 re-scores the fused candidates; and the whole pipeline is scored by the **evaluation
 harness** (recall@k, precision@k, MRR, nDCG). See the [ADRs](docs/adr/) for key choices.
@@ -44,7 +42,7 @@ harness** (recall@k, precision@k, MRR, nDCG). See the [ADRs](docs/adr/) for key 
 
 - **Chunking** - five strategies: `FixedTokenChunker` (overlapping windows),
   `SentenceChunker`, `RecursiveChunker` (separator priority), and `ParagraphChunker`.
-- **Retrievers (5)** - Okapi `BM25Retriever`, a trained `TfidfDenseRetriever`, a
+- **Retrievers (5)** - Okapi `BM25Retriever`, a `TfidfRetriever`, a
   typo-robust `CharNgramRetriever` (character n-grams), an exact-match `PhraseRetriever`,
   and the fusing `HybridRetriever`.
 - **Query processing** - `SynonymExpander` and pseudo-relevance feedback (`expand_with_prf`)
@@ -65,7 +63,7 @@ harness** (recall@k, precision@k, MRR, nDCG). See the [ADRs](docs/adr/) for key 
 | Pipeline | Index build (ms) | Queries / sec |
 |---|---:|---:|
 | `bm25` | 4.5 | 1,696 |
-| `dense` | 8.7 | 2,241 |
+| `tfidf` | 8.7 | 2,241 |
 | `hybrid` | 13.2 | 940 |
 | `reranked` | 12.9 | 819 |
 | `hybrid-all` (4-way fusion) | 47.6 | 330 |
@@ -81,7 +79,7 @@ require no external service.
 | Pipeline | recall@3 | precision@3 | MRR | nDCG@3 |
 |---|---:|---:|---:|---:|
 | `bm25` | 1.000 | 0.611 | 0.967 | 0.975 |
-| `dense` | 1.000 | 0.611 | 0.967 | 0.975 |
+| `tfidf` | 1.000 | 0.611 | 0.967 | 0.975 |
 | `hybrid` | 1.000 | 0.611 | 0.967 | 0.975 |
 | `reranked` | 1.000 | 0.611 | 0.967 | 0.975 |
 | `hybrid-all` | 1.000 | 0.333 | 0.967 | 0.975 |
@@ -113,10 +111,10 @@ Use the library directly:
 
 ```python
 from hybrid_rag.core import FixedTokenChunker, chunk_documents, Document
-from hybrid_rag.retrievers import BM25Retriever, TfidfDenseRetriever, HybridRetriever
+from hybrid_rag.retrievers import BM25Retriever, TfidfRetriever, HybridRetriever
 
 chunks = chunk_documents([Document(id="d", text="...")], FixedTokenChunker())
-retriever = HybridRetriever([BM25Retriever(), TfidfDenseRetriever()])
+retriever = HybridRetriever([BM25Retriever(), TfidfRetriever()])
 retriever.index(chunks)
 results = retriever.retrieve("my query", k=5)
 ```
@@ -146,9 +144,9 @@ document, and the [case study](docs/CASE_STUDY.md) on choosing a pipeline under 
 - **Reciprocal rank fusion, not score addition.** BM25 and cosine scores are on
   incomparable scales; fusing ranks is robust and parameter-light.
   ([ADR-0002](docs/adr/0002-reciprocal-rank-fusion.md))
-- **Learn the dense space from the corpus.** TF-IDF idf weights are fit at index time, so
-  the dense retriever is genuinely trained, not pretrained-and-imported.
-  ([ADR-0003](docs/adr/0003-tfidf-dense-retriever.md))
+- **Fit the TF-IDF weights from the corpus.** The idf weights are computed at index time,
+  so the retriever is corpus-specific; it is a sparse lexical method, not a neural dense embedding.
+  ([ADR-0003](docs/adr/0003-tfidf-retriever.md))
 - **Evaluation is a first-class component**, not an afterthought: the project ships the
   metrics and the harness, and every claim is a reproducible number.
 
@@ -160,7 +158,7 @@ document, and the [case study](docs/CASE_STUDY.md) on choosing a pipeline under 
 
 ## Limitations
 
-- The dense retriever is TF-IDF, which shares vocabulary with BM25; it cannot match
+- The TF-IDF retriever is sparse and lexical, sharing vocabulary with BM25; it cannot match
   paraphrases with no lexical overlap. True semantic retrieval needs neural embeddings
   (a deliberate boundary to keep the project dependency-free and from-scratch).
 - Because both retrievers are lexical, they converge on the clean bundled corpus; the
