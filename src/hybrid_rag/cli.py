@@ -47,7 +47,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ablate_parser.add_argument("--k", type=int, default=5, help="Evaluation cutoff.")
     ablate_parser.set_defaults(handler=_handle_ablate)
+
+    serve_parser = subparsers.add_parser("serve", help="Start the HTTP retrieval service.")
+    serve_parser.add_argument("--host", default="127.0.0.1", help="Bind host.")
+    serve_parser.add_argument("--port", type=int, default=8000, help="Bind port.")
+    serve_parser.set_defaults(handler=_handle_serve)
     return parser
+
+
+def _handle_serve(args: argparse.Namespace) -> int:
+    from hybrid_rag.service import serve
+
+    serve(host=args.host, port=args.port)
+    return 0
 
 
 def _handle_query(args: argparse.Namespace) -> int:
