@@ -16,6 +16,8 @@ indexed over the corpus once at startup, then the service serves stateless reque
 | Method | Path | Body | Success |
 |---|---|---|---|
 | GET | `/health` | none | status, pipeline names, chunk count |
+| GET | `/ready` | none | readiness once every pipeline is indexed |
+| GET | `/metrics` | none | per-route request, error, and latency metrics (Prometheus text) |
 | POST | `/retrieve` | `{"query", "pipeline"?, "k"?}` | ranked chunks with scores |
 
 `pipeline` defaults to `hybrid` and must be one of the advertised names; `k` is bounded.
