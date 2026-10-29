@@ -121,6 +121,25 @@ retriever.index(chunks)
 results = retriever.retrieve("my query", k=5)
 ```
 
+## Running the service
+
+A dependency-free HTTP service indexes every pipeline once at startup and serves retrieval:
+
+```bash
+python -m hybrid_rag serve --port 8000
+
+curl localhost:8000/health
+curl -s -X POST localhost:8000/retrieve -d '{"query": "neural networks", "pipeline": "hybrid", "k": 5}'
+```
+
+`GET /health` lists the pipelines and chunk count; `POST /retrieve` returns ranked chunks
+with scores for a chosen pipeline, so the latency-for-quality tradeoff is selectable per
+request. A production-style stress benchmark (`uv run python benchmarks/stress.py`) reports
+throughput and p50/p95/p99 latency per pipeline, making that tradeoff concrete; the service
+is scaled with processes because the pure-Python handler is bound by the global interpreter
+lock. See the [operations guide](docs/OPERATIONS.md), the [scaling and tradeoffs](docs/SCALING.md)
+document, and the [case study](docs/CASE_STUDY.md) on choosing a pipeline under a budget.
+
 ## Design decisions
 
 - **Reciprocal rank fusion, not score addition.** BM25 and cosine scores are on
