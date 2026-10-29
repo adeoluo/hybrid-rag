@@ -21,7 +21,7 @@ def test_corpus_and_queries_consistent() -> None:
 
 
 def test_all_pipelines_build() -> None:
-    assert {"bm25", "dense", "hybrid", "reranked"} <= set(available_pipelines())
+    assert {"bm25", "tfidf", "hybrid", "reranked"} <= set(available_pipelines())
     for name in available_pipelines():
         assert build_pipeline(name) is not None
 
@@ -60,6 +60,6 @@ def test_cli_query(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 def test_cli_query_dense(capsys: pytest.CaptureFixture[str]) -> None:
-    exit_code = main(["query", "powerhouse of the cell", "--pipeline", "dense"])
+    exit_code = main(["query", "powerhouse of the cell", "--pipeline", "tfidf"])
     assert exit_code == 0
     assert "mitochondria" in capsys.readouterr().out

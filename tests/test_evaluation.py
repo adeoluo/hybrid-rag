@@ -14,7 +14,7 @@ from hybrid_rag.evaluation import (
     recall_at_k,
     reciprocal_rank,
 )
-from hybrid_rag.retrievers import BM25Retriever, HybridRetriever, TfidfDenseRetriever
+from hybrid_rag.retrievers import BM25Retriever, HybridRetriever, TfidfRetriever
 
 
 # --------------------------------------------------------------------------- #
@@ -117,7 +117,7 @@ def test_hybrid_at_least_matches_components_on_mrr() -> None:
     bm25.index(corpus)
     bm25_report = evaluate_retriever(bm25, queries, k=3)
 
-    hybrid = HybridRetriever([BM25Retriever(), TfidfDenseRetriever()])
+    hybrid = HybridRetriever([BM25Retriever(), TfidfRetriever()])
     hybrid.index(corpus)
     hybrid_report = evaluate_retriever(hybrid, queries, k=3)
 
