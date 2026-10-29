@@ -9,7 +9,7 @@ from hybrid_rag.reranking import (
     LexicalOverlapReranker,
     RerankedRetriever,
 )
-from hybrid_rag.retrievers import BM25Retriever, HybridRetriever, TfidfDenseRetriever
+from hybrid_rag.retrievers import BM25Retriever, HybridRetriever, TfidfRetriever
 
 
 def _corpus() -> list[Chunk]:
@@ -27,7 +27,7 @@ def _corpus() -> list[Chunk]:
 # Hybrid fusion
 # --------------------------------------------------------------------------- #
 def test_hybrid_fuses_both_retrievers() -> None:
-    hybrid = HybridRetriever([BM25Retriever(), TfidfDenseRetriever()])
+    hybrid = HybridRetriever([BM25Retriever(), TfidfRetriever()])
     hybrid.index(_corpus())
     results = hybrid.retrieve("python programming", k=3)
     assert results
@@ -35,7 +35,7 @@ def test_hybrid_fuses_both_retrievers() -> None:
 
 
 def test_hybrid_scores_descending() -> None:
-    hybrid = HybridRetriever([BM25Retriever(), TfidfDenseRetriever()])
+    hybrid = HybridRetriever([BM25Retriever(), TfidfRetriever()])
     hybrid.index(_corpus())
     scores = [r.score for r in hybrid.retrieve("dog", k=5)]
     assert scores == sorted(scores, reverse=True)
@@ -85,7 +85,7 @@ def test_reranker_validates_weight() -> None:
 
 def test_reranked_retriever_pipeline() -> None:
     pipeline = RerankedRetriever(
-        HybridRetriever([BM25Retriever(), TfidfDenseRetriever()]),
+        HybridRetriever([BM25Retriever(), TfidfRetriever()]),
         LexicalOverlapReranker(),
         candidate_pool=10,
     )

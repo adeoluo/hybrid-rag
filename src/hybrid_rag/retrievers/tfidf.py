@@ -1,13 +1,13 @@
-"""Dense retriever with TF-IDF embeddings learned from the corpus.
+"""A TF-IDF vector-space retriever that fits its weights from the corpus.
 
-This is the "trained embedding" retriever: rather than importing pretrained vectors, it
-*learns* a TF-IDF vector space from the indexed corpus - the inverse-document-frequency
-weights are fit at index time - and embeds both chunks and queries into that space,
-ranking by cosine similarity.
-
-TF-IDF is a real, interpretable dense representation. Implementing the fit (learn idf),
-the transform (embed to sparse vectors), and cosine ranking from scratch is the point: it
-shows the mechanics a neural embedding model generalizes, with no heavy dependencies.
+This is a classical, sparse term-weighting retriever, not a neural dense embedding.
+It fits inverse-document-frequency weights at index time, represents each chunk and
+query as a sparse TF-IDF vector (a dictionary of term weights), and ranks by cosine
+similarity. Fitting the idf from the indexed corpus is what makes it corpus-specific,
+but the representation is sparse and lexical: it matches on shared terms and cannot
+bridge paraphrases with no lexical overlap, which is what a neural dense retriever
+adds. Implementing the fit, the transform, and cosine ranking from scratch shows the
+mechanics with no heavy dependencies.
 """
 
 from __future__ import annotations
@@ -22,8 +22,8 @@ from hybrid_rag.core.types import Chunk, ScoredChunk
 Vector = dict[str, float]
 
 
-class TfidfDenseRetriever:
-    """A dense retriever over TF-IDF vectors with cosine similarity."""
+class TfidfRetriever:
+    """A retriever over sparse TF-IDF vectors ranked by cosine similarity."""
 
     def __init__(self) -> None:
         self._chunks: list[Chunk] = []
