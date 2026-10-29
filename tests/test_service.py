@@ -50,3 +50,19 @@ def test_unknown_route() -> None:
     status, payload = handle("GET", "/nope", {}, _SERVICE)
     assert status == 404
     assert "error" in payload
+
+
+def test_ready_endpoint() -> None:
+    status, payload = handle("GET", "/ready", {}, RetrievalService.from_corpus())
+    assert status == 200
+    assert payload["status"] == "ready"
+
+
+def test_metrics_record_requests() -> None:
+    service = RetrievalService.from_corpus()
+    handle("POST", "/retrieve", {"query": "neural networks"}, service)
+    text = service.metrics.render_prometheus()
+    assert "service_requests_total" in text
+    assert 'route="POST /retrieve"' in text
+    assert "service_request_duration_ms_bucket" in text
+    assert service.metrics.total_requests >= 1
