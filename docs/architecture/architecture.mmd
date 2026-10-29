@@ -8,37 +8,50 @@ config:
     primaryBorderColor: "#1E293B"
     primaryTextColor: "#1E293B"
     lineColor: "#64748B"
-    clusterBkg: "#E2E8F0"
+    clusterBkg: "#EEF2FF"
     clusterBorder: "#94A3B8"
 ---
-flowchart LR
+flowchart TB
+    classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
     classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
-    classDef external fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
+    classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    Docs[(Documents)]:::data
-    Query([Query]):::external
+    Client([Client]):::edge
 
-    subgraph Index["Indexing"]
-        Chunker[Chunker]:::core
+    subgraph Ingest["Ingestion (once at startup)"]
+        direction TB
+        Docs[(Document corpus)]:::data
+        Chunk[Chunking]:::core
     end
 
-    subgraph Retrieval["Retrieval"]
-        BM25[BM25]:::core
-        Dense[TF-IDF Dense]:::core
-        Fusion[Reciprocal Rank Fusion]:::core
-        Rerank[Reranker]:::core
+    subgraph Edge["Service layer (stdlib HTTP, stateless)"]
+        direction TB
+        Router["Router<br/>GET /health | POST /retrieve"]:::core
+        Validate["Validation<br/>bounds: query, pipeline, k"]:::control
     end
 
-    Eval[Evaluation harness]:::core
+    subgraph Retrieve["Retrieval pipelines (selectable per request)"]
+        direction TB
+        BM25[BM25 lexical]:::core
+        Dense[TF-IDF dense]:::core
+        Fusion["Reciprocal-rank fusion"]:::core
+        Rerank["Cross-encoder reranking"]:::core
+        MMR["Maximal marginal relevance"]:::core
+    end
 
-    Docs --> Chunker
-    Chunker -->|chunks| BM25
-    Chunker -->|chunks| Dense
-    Query --> BM25
-    Query --> Dense
-    BM25 -->|ranked| Fusion
-    Dense -->|ranked| Fusion
-    Fusion -->|candidates| Rerank
-    Rerank -->|top-k| Query
-    Rerank -.->|recall, MRR, nDCG| Eval
+    Index[(In-memory indexes<br/>one per pipeline)]:::data
+    Scores["Ranked chunks + scores"]:::obs
+
+    Docs --> Chunk -->|chunks| Index
+    Client -->|JSON request| Router --> Validate
+    Validate -->|query + pipeline| BM25
+    Validate -->|query + pipeline| Dense
+    BM25 --> Fusion
+    Dense --> Fusion
+    Fusion --> Rerank --> MMR
+    Index -.-> BM25
+    Index -.-> Dense
+    MMR -->|results| Router -->|JSON response| Client
+    Rerank -.-> Scores
