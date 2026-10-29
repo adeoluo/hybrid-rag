@@ -27,13 +27,17 @@ def recall_at_k(retrieved: Sequence[str], relevant: set[str], k: int) -> float:
 
 
 def precision_at_k(retrieved: Sequence[str], relevant: set[str], k: int) -> float:
-    """Fraction of the top ``k`` that are relevant."""
+    """Fraction of the top ``k`` positions that are relevant.
+
+    The denominator is ``k`` by the standard definition of precision@k, not the
+    number of items actually returned. Dividing by the returned count inflates
+    the score when fewer than ``k`` items are retrieved (for example a single
+    correct result at ``k`` of 5 should score 0.2, not 1.0).
+    """
     if k <= 0:
         raise ValueError("k must be positive")
     top = retrieved[:k]
-    if not top:
-        return 0.0
-    return sum(1 for item in top if item in relevant) / len(top)
+    return sum(1 for item in top if item in relevant) / k
 
 
 def reciprocal_rank(retrieved: Sequence[str], relevant: set[str]) -> float:
