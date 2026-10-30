@@ -74,24 +74,27 @@ require no external service.
 
 ## Results
 
-> Reproduce with `python -m hybrid_rag ablate`. Metrics averaged over 15 labeled queries.
+> Reproduce with `python -m hybrid_rag ablate`. Metrics averaged over 15 labeled queries at k=5.
 
-| Pipeline | recall@3 | precision@3 | MRR | nDCG@3 |
+| Pipeline | recall@5 | precision@5 | MRR | nDCG@5 |
 |---|---:|---:|---:|---:|
-| `bm25` | 1.000 | 0.611 | 0.967 | 0.975 |
-| `tfidf` | 1.000 | 0.611 | 0.967 | 0.975 |
-| `hybrid` | 1.000 | 0.611 | 0.967 | 0.975 |
-| `reranked` | 1.000 | 0.611 | 0.967 | 0.975 |
-| `hybrid-all` | 1.000 | 0.333 | 0.967 | 0.975 |
-| `mmr` | 0.933 | 0.589 | 0.933 | 0.933 |
+| `bm25` | 1.000 | 0.200 | 0.967 | 0.975 |
+| `tfidf` | 1.000 | 0.200 | 0.967 | 0.975 |
+| `hybrid` | 1.000 | 0.200 | 0.967 | 0.975 |
+| `reranked` | 1.000 | 0.200 | 0.967 | 0.975 |
+| `hybrid-all` | 1.000 | 0.200 | 0.967 | 0.975 |
+| `mmr` | 1.000 | 0.200 | 0.947 | 0.959 |
 
-The six pipelines are measured identically on the same labeled queries. The lexical
-methods converge on recall here, while the differences surface in precision and MRR: the
-4-way `hybrid-all` fusion trades precision for breadth, and `mmr` trades a little recall
-for result diversity. The methodological point stands - **a genuine improvement (a better
-reranker, real neural embeddings) would show up immediately as a metric gain**, and
-`compare_retrievers` reports whether any such difference is statistically significant. See
-[limitations](#limitations) for why the lexical methods converge on this corpus.
+The six pipelines are measured identically on the same labeled queries. Each query has a
+single relevant chunk, so precision@5 is capped at 0.200 (one correct result out of five
+positions) and is identical across pipelines; it is reported for completeness rather than as
+a differentiator on this corpus. The pipelines all recover the relevant chunk (recall 1.000),
+so the differences that remain are in **ranking quality** (MRR and nDCG): `mmr` trades a
+little ranking strength for result diversity. The methodological point stands - **a genuine
+improvement (a better reranker, real neural embeddings) would show up immediately as a metric
+gain**, and `compare_retrievers` reports whether any such difference is statistically
+significant. See [limitations](#limitations) for why the lexical methods converge on this
+corpus.
 
 ## Quickstart
 
