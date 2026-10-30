@@ -33,6 +33,14 @@ def test_precision_at_k() -> None:
     assert precision_at_k(["a", "b", "c", "d"], {"a", "c"}, 4) == 0.5
 
 
+def test_precision_at_k_denominator_is_k() -> None:
+    # Regression: dividing by the number of results returned inflated precision
+    # when fewer than k items were retrieved. One correct result at k=5 is 0.2.
+    assert precision_at_k(["a"], {"a"}, 5) == pytest.approx(0.2)
+    assert precision_at_k(["a", "b", "c"], {"a"}, 5) == pytest.approx(0.2)
+    assert precision_at_k([], {"a"}, 5) == 0.0
+
+
 def test_precision_validates_k() -> None:
     with pytest.raises(ValueError, match="k must"):
         precision_at_k(["a"], {"a"}, 0)
