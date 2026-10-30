@@ -96,6 +96,29 @@ gain**, and `compare_retrievers` reports whether any such difference is statisti
 significant. See [limitations](#limitations) for why the lexical methods converge on this
 corpus.
 
+### Scale
+
+`benchmarks/scale.py` runs the flagship `hybrid` pipeline (BM25 + TF-IDF fusion)
+over progressively larger synthetic chunk corpora and a fixed 80-query set,
+reporting wall-clock time, query throughput, peak memory (stdlib `tracemalloc`,
+measured in a separate pass so the per-allocation hook does not distort timing),
+and recall@5 against one planted relevant chunk per query. Measured on this
+machine (`uv run python benchmarks/scale.py`):
+
+| Chunks | Seconds | Queries/sec | Peak MiB | recall@5 |
+|---:|---:|---:|---:|---:|
+| 500 | 1.35 | 67 | 2.3 | 0.53 |
+| 1,000 | 2.04 | 45 | 4.6 | 0.38 |
+| 2,000 | 5.87 | 17 | 9.1 | 0.31 |
+| 4,000 | 10.07 | 9 | 18.3 | 0.21 |
+
+Throughput falls faster than linearly because fusion scores every chunk with each
+sub-retriever, and recall decays as the field of random distractors grows. These
+numbers are from synthetic data on a pure-Python implementation (its TF-IDF is a
+classical sparse lexical retriever by design, not neural); they are **not** a
+comparison against production vector databases or compiled indexes, which would be
+far faster and are the right tool at real scale.
+
 ## Quickstart
 
 ```bash
