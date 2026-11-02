@@ -50,6 +50,9 @@ disallow_untyped_defs = true
 [tool.pytest.ini_options]
 addopts = "-ra -q"
 testpaths = ["tests"]
+markers = [
+    "slow: full-pipeline integration runs that train every retriever (including the neural dense one); excluded from the default CI run and reproduced by the CLI and benchmarks.",
+]
 
 [tool.coverage.run]
 source = ["src"]
