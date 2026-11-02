@@ -80,21 +80,37 @@ require no external service.
 |---|---:|---:|---:|---:|
 | `bm25` | 1.000 | 0.200 | 0.967 | 0.975 |
 | `tfidf` | 1.000 | 0.200 | 0.967 | 0.975 |
+| `dense` | 1.000 | 0.200 | 0.933 | 0.951 |
 | `hybrid` | 1.000 | 0.200 | 0.967 | 0.975 |
+| `dense-hybrid` | 1.000 | 0.200 | 0.967 | 0.975 |
 | `reranked` | 1.000 | 0.200 | 0.967 | 0.975 |
 | `hybrid-all` | 1.000 | 0.200 | 0.967 | 0.975 |
 | `mmr` | 1.000 | 0.200 | 0.947 | 0.959 |
 
-The six pipelines are measured identically on the same labeled queries. Each query has a
+The pipelines are measured identically on the same labeled queries. Each query has a
 single relevant chunk, so precision@5 is capped at 0.200 (one correct result out of five
 positions) and is identical across pipelines; it is reported for completeness rather than as
-a differentiator on this corpus. The pipelines all recover the relevant chunk (recall 1.000),
-so the differences that remain are in **ranking quality** (MRR and nDCG): `mmr` trades a
-little ranking strength for result diversity. The methodological point stands - **a genuine
-improvement (a better reranker, real neural embeddings) would show up immediately as a metric
-gain**, and `compare_retrievers` reports whether any such difference is statistically
-significant. See [limitations](#limitations) for why the lexical methods converge on this
-corpus.
+a differentiator on this corpus. Every pipeline recovers the relevant chunk (recall 1.000),
+so the differences that remain are in **ranking quality** (MRR and nDCG).
+
+### What the neural dense retriever shows (an honest result)
+
+The `dense` pipeline is a **from-scratch neural retriever**: it trains word embeddings with a
+skip-gram objective and negative sampling over the indexed corpus (pure Python, no numerical
+libraries), represents each chunk and query as the mean of its word vectors, and ranks by
+cosine similarity. It is the "real neural embeddings" baseline the lexical methods are measured
+against.
+
+The honest finding is that on this small corpus the learned dense retriever **does not beat the
+strong lexical baselines**: it still recovers every relevant chunk (recall 1.000) but ranks it
+slightly lower on average (**MRR 0.933 versus 0.967**). This is expected and informative, not a
+bug: learning dense semantics that outranks exact lexical matching needs far more training data
+than a few short passages provide, where a single shared term is a very strong and precise
+signal. Fusing the dense retriever with the lexical ones (`dense-hybrid`) recovers the lexical
+ranking (MRR 0.967), so the dense signal does not hurt in combination. The value here is a
+correct, measured, from-scratch implementation of dense retrieval, compared fairly against
+lexical retrieval rather than assumed to beat it. See [limitations](#limitations) for why the
+methods converge at this corpus scale.
 
 ### Scale
 

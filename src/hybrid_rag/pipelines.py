@@ -15,6 +15,7 @@ from hybrid_rag.reranking import LexicalOverlapReranker, RerankedRetriever
 from hybrid_rag.retrievers import (
     BM25Retriever,
     CharNgramRetriever,
+    DenseRetriever,
     HybridRetriever,
     PhraseRetriever,
     TfidfRetriever,
@@ -23,6 +24,10 @@ from hybrid_rag.retrievers import (
 
 def _hybrid() -> Retriever:
     return HybridRetriever([BM25Retriever(), TfidfRetriever()])
+
+
+def _dense_hybrid() -> Retriever:
+    return HybridRetriever([BM25Retriever(), TfidfRetriever(), DenseRetriever()])
 
 
 def _reranked() -> Retriever:
@@ -42,7 +47,9 @@ def _mmr() -> Retriever:
 BUILDERS: dict[str, Callable[[], Retriever]] = {
     "bm25": BM25Retriever,
     "tfidf": TfidfRetriever,
+    "dense": DenseRetriever,
     "hybrid": _hybrid,
+    "dense-hybrid": _dense_hybrid,
     "reranked": _reranked,
     "hybrid-all": _hybrid_all,
     "mmr": _mmr,
