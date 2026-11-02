@@ -1,0 +1,55 @@
+# Hybrid RAG
+
+> Production hybrid retrieval built from scratch: BM25 and a TF-IDF vector retriever, fused and reranked, with a rigorous retrieval evaluation suite.
+
+Languages: Python. License: MIT. Source: https://github.com/adeoluo/hybrid-rag
+
+## Docs
+
+- [README](https://github.com/adeoluo/hybrid-rag/blob/main/README.md): motivation, architecture, results, quickstart, usage, design decisions, testing, responsible ai, limitations, roadmap
+- [AGENTS.md](https://github.com/adeoluo/hybrid-rag/blob/main/AGENTS.md): layout, commands and conventions for changing the code
+- [Architecture diagram](https://github.com/adeoluo/hybrid-rag/blob/main/docs/architecture/architecture.mmd): Mermaid source of the component diagram
+- [End-to-End Case Study - Choosing a Retrieval Pipeline](https://github.com/adeoluo/hybrid-rag/blob/main/docs/CASE_STUDY.md)
+- [Data Card - Hybrid RAG](https://github.com/adeoluo/hybrid-rag/blob/main/docs/DATA_CARD.md)
+- [Definition of Done](https://github.com/adeoluo/hybrid-rag/blob/main/docs/DEFINITION_OF_DONE.md)
+- [Evaluation Report - Hybrid RAG](https://github.com/adeoluo/hybrid-rag/blob/main/docs/EVALUATION_REPORT.md)
+- [System Card - Hybrid RAG](https://github.com/adeoluo/hybrid-rag/blob/main/docs/MODEL_CARD.md)
+- [Operations Guide - Hybrid RAG](https://github.com/adeoluo/hybrid-rag/blob/main/docs/OPERATIONS.md)
+- [Scaling and Design Tradeoffs - Hybrid RAG](https://github.com/adeoluo/hybrid-rag/blob/main/docs/SCALING.md)
+- [Threat Model - Hybrid RAG](https://github.com/adeoluo/hybrid-rag/blob/main/docs/THREAT_MODEL.md)
+- [ADR-0001: Record architecture decisions](https://github.com/adeoluo/hybrid-rag/blob/main/docs/adr/0001-record-architecture-decisions.md)
+- [ADR-0002: Reciprocal rank fusion for hybrid retrieval](https://github.com/adeoluo/hybrid-rag/blob/main/docs/adr/0002-reciprocal-rank-fusion.md)
+- [ADR-0003: A TF-IDF vector-space retriever fit from the corpus](https://github.com/adeoluo/hybrid-rag/blob/main/docs/adr/0003-tfidf-retriever.md)
+- [ADR-NNNN: <short title>](https://github.com/adeoluo/hybrid-rag/blob/main/docs/adr/template.md)
+- [Changelog](https://github.com/adeoluo/hybrid-rag/blob/main/CHANGELOG.md): release history
+
+## Source
+
+- [src/hybrid_rag/__init__.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/__init__.py): Hybrid RAG - production hybrid retrieval built from scratch.
+- [src/hybrid_rag/cli.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/cli.py): Command-line interface for the hybrid retrieval system.
+- [src/hybrid_rag/core/__init__.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/__init__.py): Core abstractions for hybrid retrieval.
+- [src/hybrid_rag/core/chunking.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/chunking.py): Chunking strategies: splitting documents into retrievable spans.
+- [src/hybrid_rag/core/chunking_advanced.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/chunking_advanced.py): Additional chunking strategies.
+- [src/hybrid_rag/core/retriever.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/retriever.py): The retriever interface.
+- [src/hybrid_rag/core/tokenization.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/tokenization.py): Text tokenization shared across retrievers.
+- [src/hybrid_rag/core/types.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/types.py): Core data types for retrieval.
+- [src/hybrid_rag/data/sample.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/data/sample.py): A small bundled corpus and labeled query set for reproducible evaluation.
+- [src/hybrid_rag/evaluation/__init__.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/evaluation/__init__.py): Retrieval evaluation: metrics and a harness.
+- [src/hybrid_rag/evaluation/comparison.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/evaluation/comparison.py): Additional retrieval metrics and a bootstrap comparison of two retrievers.
+- [src/hybrid_rag/evaluation/harness.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/evaluation/harness.py): A retrieval evaluation harness.
+- [src/hybrid_rag/evaluation/metrics.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/evaluation/metrics.py): Retrieval quality metrics, implemented from scratch.
+- [src/hybrid_rag/mmr.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/mmr.py): Maximal Marginal Relevance (MMR) diversity reranking.
+- [src/hybrid_rag/observability.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/observability.py): In-process request metrics for the HTTP service.
+- [src/hybrid_rag/persistence.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/persistence.py): Persisting a chunked corpus to disk.
+- [src/hybrid_rag/pipelines.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/pipelines.py): Convenience builders for the named retriever configurations.
+- [src/hybrid_rag/query.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/query.py): Query processing: expansion and normalization.
+- [src/hybrid_rag/rag.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/rag.py): Retrieval-augmented generation: assembling cited context for a reader.
+- [src/hybrid_rag/reranking.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/reranking.py): Reranking: a second-stage scorer over a first-stage candidate set.
+- [src/hybrid_rag/retrievers/__init__.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/retrievers/__init__.py): Retrievers: sparse (BM25), dense (TF-IDF), and hybrid fusion.
+- [src/hybrid_rag/retrievers/bm25.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/retrievers/bm25.py): BM25 lexical retriever, implemented from scratch.
+- [src/hybrid_rag/retrievers/char_ngram.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/retrievers/char_ngram.py): Character n-gram retriever, robust to typos and morphology.
+- [src/hybrid_rag/retrievers/dense.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/retrievers/dense.py): A from-scratch neural dense retriever.
+- [src/hybrid_rag/retrievers/hybrid.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/retrievers/hybrid.py): Hybrid retrieval via reciprocal rank fusion.
+- [src/hybrid_rag/retrievers/phrase.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/retrievers/phrase.py): Exact phrase retriever.
+- [src/hybrid_rag/retrievers/tfidf.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/retrievers/tfidf.py): A TF-IDF vector-space retriever that fits its weights from the corpus.
+- [src/hybrid_rag/service.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/service.py): A standard-library HTTP service exposing hybrid retrieval.
