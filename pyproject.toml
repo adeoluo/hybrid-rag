@@ -1,6 +1,6 @@
 [project]
 name = "hybrid-rag"
-version = "0.1.0"
+version = "0.2.0"
 description = "Hybrid retrieval from scratch: BM25 + a trained TF-IDF dense retriever, fusion, reranking, and evaluation."
 readme = "README.md"
 requires-python = ">=3.11"
