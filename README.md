@@ -204,6 +204,12 @@ The same query through three retrieval pipelines.
   <img src="docs/demo/pipelines.gif" alt="The same query through three retrieval pipelines" width="860">
 </p>
 
+The HTTP service retrieving with the hybrid pipeline.
+
+<p align="center">
+  <img src="docs/demo/http.gif" alt="The HTTP service retrieving with the hybrid pipeline" width="860">
+</p>
+
 ## Design decisions
 
 - **Reciprocal rank fusion, not score addition.** BM25 and cosine scores are on
