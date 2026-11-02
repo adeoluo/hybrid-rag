@@ -194,6 +194,16 @@ lock. The service also exposes `GET /ready` (readiness) and `GET /metrics` (per-
 and latency metrics in Prometheus text format). See the [operations guide](docs/OPERATIONS.md), the
 [scaling and tradeoffs](docs/SCALING.md) document, and the [case study](docs/CASE_STUDY.md) on choosing a pipeline under a budget.
 
+### Demos
+
+Recorded from real runs with [vhs](https://github.com/charmbracelet/vhs); each tape is in `docs/demo/`.
+
+The same query through three retrieval pipelines.
+
+<p align="center">
+  <img src="docs/demo/pipelines.gif" alt="The same query through three retrieval pipelines" width="860">
+</p>
+
 ## Design decisions
 
 - **Reciprocal rank fusion, not score addition.** BM25 and cosine scores are on
