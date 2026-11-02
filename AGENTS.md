@@ -5,13 +5,14 @@ explains what the project does and why; this file explains how to change it safe
 
 ## Project
 
-Production hybrid retrieval built from scratch: BM25 and a TF-IDF vector retriever, fused and reranked, with a rigorous retrieval evaluation suite.
+Hybrid retrieval built from scratch: stemmed BM25 and TF-IDF over inverted indexes, fused and reranked, evaluated on the BEIR benchmark.
 
 ## Layout
 
 - `benchmarks/`: benchmark scripts and recorded results
 - `docker-compose.yml`: local container setup
 - `docs/`: documentation, architecture diagram source and render, design records
+- `scripts/`: maintenance scripts (release, assets, data)
 - `src/`: library and service source
 - `tests/`: test suite
 

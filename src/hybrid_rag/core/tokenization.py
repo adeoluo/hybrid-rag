@@ -2,13 +2,16 @@
 
 A single, explicit tokenizer keeps BM25 and the dense retriever consistent: they index and
 query the same token stream. Tokenization lowercases, splits on non-alphanumerics, and
-optionally removes a small English stopword list - decisions that materially affect
-retrieval quality, so they are centralized and documented here.
+optionally removes a small English stopword list and reduces words to their Porter stems -
+decisions that materially affect retrieval quality, so they are centralized and documented
+here.
 """
 
 from __future__ import annotations
 
 import re
+
+from hybrid_rag.core.stemming import stem_all
 
 _TOKEN = re.compile(r"[a-z0-9]+")
 
@@ -56,9 +59,11 @@ STOPWORDS = frozenset(
 )
 
 
-def tokenize(text: str, *, remove_stopwords: bool = True) -> list[str]:
-    """Lowercase, split, and optionally drop stopwords from ``text``."""
+def tokenize(text: str, *, remove_stopwords: bool = True, stem: bool = False) -> list[str]:
+    """Lowercase, split, and optionally drop stopwords from and stem ``text``."""
     tokens = _TOKEN.findall(text.lower())
     if remove_stopwords:
-        return [token for token in tokens if token not in STOPWORDS]
+        tokens = [token for token in tokens if token not in STOPWORDS]
+    if stem:
+        tokens = stem_all(tokens)
     return tokens
