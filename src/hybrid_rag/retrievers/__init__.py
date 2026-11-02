@@ -5,6 +5,7 @@ from __future__ import annotations
 from hybrid_rag.core.retriever import Retriever
 from hybrid_rag.retrievers.bm25 import BM25Retriever
 from hybrid_rag.retrievers.char_ngram import CharNgramRetriever
+from hybrid_rag.retrievers.dense import DenseRetriever
 from hybrid_rag.retrievers.hybrid import HybridRetriever
 from hybrid_rag.retrievers.phrase import PhraseRetriever
 from hybrid_rag.retrievers.tfidf import TfidfRetriever
@@ -12,6 +13,7 @@ from hybrid_rag.retrievers.tfidf import TfidfRetriever
 __all__ = [
     "BM25Retriever",
     "CharNgramRetriever",
+    "DenseRetriever",
     "HybridRetriever",
     "PhraseRetriever",
     "Retriever",

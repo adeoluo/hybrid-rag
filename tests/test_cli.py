@@ -31,6 +31,7 @@ def test_build_unknown_pipeline_raises() -> None:
         build_pipeline("nonexistent")
 
 
+@pytest.mark.slow
 def test_pipelines_achieve_strong_retrieval() -> None:
     chunks = chunk_documents(corpus(), FixedTokenChunker(chunk_size=200))
     queries = labeled_queries()
@@ -43,6 +44,7 @@ def test_pipelines_achieve_strong_retrieval() -> None:
         assert report.mrr >= 0.9
 
 
+@pytest.mark.slow
 def test_cli_ablate(capsys: pytest.CaptureFixture[str]) -> None:
     exit_code = main(["ablate", "--k", "3"])
     output = capsys.readouterr().out
