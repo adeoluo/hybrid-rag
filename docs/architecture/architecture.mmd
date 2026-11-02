@@ -5,60 +5,46 @@ flowchart LR
     classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    User([CLI user]):::edge
-    Client([HTTP client]):::edge
-
-    subgraph Interfaces["Interfaces (CLI and stdlib HTTP)"]
+    subgraph Interfaces["Interfaces"]
         direction TB
-        CLI["cli.py<br/>query | ablate | serve"]:::edge
-        Router["service.py router<br/>/health /ready /retrieve /metrics"]:::core
-        Validate["Request validation<br/>query length, known pipeline, k 1 to 50"]:::control
+        Users([Users and clients]):::edge
+        CLI["CLI<br/>query, ablate, serve"]:::edge
+        Router["HTTP service<br/>/retrieve /metrics"]:::core
+        Validate["Validation<br/>query, pipeline, k"]:::control
+        Users --> CLI ~~~ Router --> Validate
     end
 
-    subgraph Core["Retrieval pipelines (8 named in pipelines.py)"]
+    subgraph State["Data and state"]
         direction TB
-        Registry["Pipeline registry<br/>bm25, tfidf, dense, hybrid, mmr, ..."]:::control
-        Chunker["FixedTokenChunker<br/>200-token chunks"]:::core
-        Lexical["Sparse retrievers<br/>BM25, TF-IDF, char n-gram, phrase"]:::core
-        Dense["Neural dense retriever<br/>skip-gram embeddings, cosine"]:::core
-        Fusion["HybridRetriever<br/>reciprocal rank fusion"]:::core
-        Rerank["RerankedRetriever<br/>lexical overlap or MMR, pool 20"]:::core
+        Corpus[("Bundled corpus")]:::data
+        Chunker["Chunker<br/>200-token chunks"]:::core
+        Indexes[("Retriever indexes")]:::data
+        Queries[("Labeled queries")]:::data
+        Corpus --> Chunker --> Indexes ~~~ Queries
     end
 
-    subgraph State["Data and state (in memory)"]
+    subgraph Core["Retrieval pipelines"]
         direction TB
-        Corpus[("Bundled corpus<br/>data/sample.py")]:::data
-        Indexes[("Indexed retrievers<br/>one per pipeline")]:::data
-        Queries[("Labeled queries<br/>relevant chunk ids")]:::data
+        Registry["Pipeline registry<br/>8 named pipelines"]:::control
+        Lexical["Sparse retrievers<br/>BM25, TF-IDF, n-gram"]:::core
+        Dense["Neural dense<br/>skip-gram, cosine"]:::core
+        Fusion["Rank fusion<br/>reciprocal rank"]:::core
+        Rerank["Reranking<br/>overlap or MMR"]:::core
+        Registry --> Lexical --> Fusion
+        Registry --> Dense --> Fusion
+        Fusion --> Rerank
     end
 
     subgraph Obs["Evaluation and observability"]
         direction TB
-        Results["Ranked chunks JSON<br/>id, score, text"]:::obs
-        Harness["Evaluation harness<br/>recall, precision, MRR, nDCG"]:::obs
-        Compare["compare_retrievers<br/>paired bootstrap significance"]:::obs
-        Metrics["ServiceMetrics<br/>Prometheus text"]:::obs
+        Results["Ranked chunks<br/>JSON response"]:::obs
+        Harness["Evaluation<br/>recall, MRR, nDCG"]:::obs
+        Compare["Significance<br/>paired bootstrap"]:::obs
+        Metrics["Metrics<br/>Prometheus text"]:::obs
+        Results --> Harness --> Compare
+        Harness ~~~ Metrics
     end
 
-    User -->|arguments| CLI
-    Client -->|JSON request| Router
-    Router -->|POST /retrieve| Validate
-    Validate -->|query, pipeline, k| Registry
-    CLI -->|query or ablation| Registry
-    Corpus -->|documents| Chunker
-    Chunker -->|chunks| Indexes
-    Registry -->|builds| Lexical
-    Registry -->|builds| Dense
-    Indexes -.-> Lexical
-    Indexes -.-> Dense
-    Lexical -->|rankings| Fusion
-    Dense -->|rankings| Fusion
-    Fusion -->|top candidates| Rerank
-    Rerank -->|top k| Results
-    Fusion -->|top k| Results
-    Lexical -->|single-retriever top k| Results
-    Dense --> Results
-    Queries -.->|relevance labels| Harness
-    Results -->|per-pipeline rankings| Harness
-    Harness -->|same metrics, two pipelines| Compare
-    Router -.->|route latency and errors| Metrics
+    Interfaces -->|query, k| Core
+    State -.->|indexes| Core
+    Core -->|top k| Obs
