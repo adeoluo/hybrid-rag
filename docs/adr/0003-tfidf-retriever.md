@@ -5,9 +5,9 @@
 
 ## Context
 
-The project needs a second retriever to contrast with BM25, and it aims to be from scratch
-and dependency-free. Importing a pretrained neural embedding model would add a heavy
-dependency and make the representation a black box.
+The project needs a second retriever to contrast with BM25, and it aims to build each
+retriever from scratch. Importing a pretrained neural embedding model would make the
+representation a black box and tie the comparison to an external model.
 
 ## Decision
 

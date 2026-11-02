@@ -11,7 +11,7 @@ of the corpus is noise drawn from the same vocabulary, so the true positive must
 be distinguished by term weighting rather than a unique token, and recall decays
 as the field of distractors grows.
 
-The data is synthetic and every retriever here is from-scratch pure Python
+The data is synthetic and every retriever here is from-scratch Python
 (including a classical sparse TF-IDF, which is lexical by design, not neural): it
 is not meant to be competitive on wall-clock with compiled indexes or vector
 databases. The point is to show how this implementation scales, honestly.
@@ -154,7 +154,7 @@ def _peak_memory(workload: Workload, *, k: int) -> int:
 
 
 def main() -> None:
-    print("Synthetic corpus; from-scratch pure-Python hybrid retrieval (not a vector DB).")
+    print("Synthetic corpus; from-scratch Python hybrid retrieval (not a vector DB).")
     print(
         f"Flagship '{_PIPELINE}' pipeline, {_NUM_QUERIES} queries, recall@{_K} vs planted chunk.\n"
     )

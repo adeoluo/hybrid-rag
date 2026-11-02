@@ -1,4 +1,4 @@
-"""A dependency-free HTTP service exposing hybrid retrieval.
+"""A standard-library HTTP service exposing hybrid retrieval.
 
 The service indexes the bundled corpus with every pipeline once at startup, then
 answers retrieval requests against a chosen pipeline. A pure handler is separated

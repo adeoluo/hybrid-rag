@@ -6,8 +6,8 @@ query as a sparse TF-IDF vector (a dictionary of term weights), and ranks by cos
 similarity. Fitting the idf from the indexed corpus is what makes it corpus-specific,
 but the representation is sparse and lexical: it matches on shared terms and cannot
 bridge paraphrases with no lexical overlap, which is what a neural dense retriever
-adds. Implementing the fit, the transform, and cosine ranking from scratch shows the
-mechanics with no heavy dependencies.
+adds. Implementing the fit, the transform, and cosine ranking from scratch keeps the
+mechanics visible.
 """
 
 from __future__ import annotations

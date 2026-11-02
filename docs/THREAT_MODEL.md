@@ -16,7 +16,7 @@
 | Index poisoning | Malicious documents added to the corpus | Skewed retrieval | Retrieval is read-only over indexed text; callers control what is indexed |
 | Resource exhaustion | Very large corpus or query | Memory / time blowup | In-memory index documented as demonstration-scale; k bounds result size |
 | Misleading metrics | Mislabeled query set | Overstated quality | Labeled data is bundled and inspectable; metrics are standard and reproducible |
-| Supply-chain compromise | Malicious dependency | Code execution | Zero runtime dependencies; Dependabot and CodeQL in continuous integration |
+| Supply-chain compromise | Malicious dependency | Code execution | No third-party runtime packages; Dependabot and CodeQL in continuous integration |
 
 ## Residual risk
 

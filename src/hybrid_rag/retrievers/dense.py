@@ -2,8 +2,8 @@
 
 Unlike the sparse lexical retrievers (BM25, TF-IDF), this retriever learns a dense
 embedding for every word and represents a chunk or query as the mean of its word
-vectors, ranking by cosine similarity. The embeddings are trained from scratch in
-pure Python with a skip-gram objective and negative sampling over the indexed
+vectors, ranking by cosine similarity. The embeddings are trained from scratch
+with a skip-gram objective and negative sampling over the indexed
 corpus, so semantically related words move together in the vector space even when
 they are not the same token.
 

@@ -21,8 +21,8 @@ Because replicas share nothing, throughput is approximately linear in replica co
 
 ## Substantial tradeoffs
 
-- **In-memory indexes vs an external store.** In memory gives millisecond retrieval and zero
-  dependencies, bounded by corpus size and the number of pipelines per replica. An external
+- **In-memory indexes vs an external store.** In memory gives millisecond retrieval with no
+  external service, bounded by corpus size and the number of pipelines per replica. An external
   vector or inverted-index store lifts the ceiling but adds a network hop and a dependency.
   Retrievers sit behind a protocol so the store can be swapped.
 - **Many pipelines vs one.** Offering six pipelines exposes the latency-for-quality tradeoff
@@ -31,7 +31,7 @@ Because replicas share nothing, throughput is approximately linear in replica co
 - **Fusion and reranking vs raw retrieval.** Reciprocal-rank fusion, cross-encoder-style
   reranking, and maximal marginal relevance improve quality or diversity but each adds a
   stage and latency (measured). The pipeline makes the cost explicit and opt-in.
-- **Threads vs processes.** Retrieval is pure Python and GIL-bound, so processes, not
+- **Threads vs processes.** Retrieval is CPU-bound Python under the GIL, so processes, not
   threads, are the unit of scaling. The service is stateless to make that trivial.
 
 ## What would change under real load
