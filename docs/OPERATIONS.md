@@ -8,7 +8,7 @@ The operational contract of the retrieval service.
 uv run python -m hybrid_rag serve --host 0.0.0.0 --port 8000
 ```
 
-A standard-library HTTP server with **zero runtime dependencies**. Every pipeline is
+A standard-library HTTP server. Every pipeline is
 indexed over the corpus once at startup, then the service serves stateless requests.
 
 ## Endpoints
