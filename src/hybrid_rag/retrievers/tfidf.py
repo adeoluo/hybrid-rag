@@ -16,6 +16,9 @@ import math
 from collections import Counter
 from collections.abc import Sequence
 
+import numpy as np
+
+from hybrid_rag.core.postings import Postings, PostingsBuilder, Weights, top_k
 from hybrid_rag.core.tokenization import tokenize
 from hybrid_rag.core.types import Chunk, ScoredChunk
 
@@ -25,43 +28,58 @@ Vector = dict[str, float]
 class TfidfRetriever:
     """A retriever over sparse TF-IDF vectors ranked by cosine similarity."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, stem: bool = True) -> None:
+        self._stem = stem
         self._chunks: list[Chunk] = []
+        self._postings: Postings = Postings.empty()
         self._idf: dict[str, float] = {}
-        self._vectors: list[Vector] = []
-        self._norms: list[float] = []
+        self._norms: Weights = np.zeros(0)
 
     def index(self, chunks: Sequence[Chunk]) -> None:
-        """Fit the idf weights on ``chunks`` and embed each chunk."""
+        """Fit the idf weights on ``chunks`` and index each chunk's TF-IDF vector."""
         self._chunks = list(chunks)
-        self._fit_idf()
-        self._vectors = [self._embed(tokenize(chunk.text)) for chunk in self._chunks]
-        self._norms = [_norm(vector) for vector in self._vectors]
+        tokenized = [tokenize(chunk.text, stem=self._stem) for chunk in self._chunks]
+        self._fit_idf(tokenized)
+        builder = PostingsBuilder()
+        norms: list[float] = []
+        for doc, tokens in enumerate(tokenized):
+            vector = self._embed(tokens)
+            norms.append(_norm(vector))
+            builder.add_chunk(doc, vector.items())
+        # Only the postings and norms are kept; the per-chunk vectors are not needed again.
+        self._postings = builder.build()
+        self._norms = np.asarray(norms, dtype=np.float64)
 
     def retrieve(self, query: str, *, k: int = 10) -> list[ScoredChunk]:
         """Return the top-``k`` chunks by cosine similarity to the query."""
         if not self._chunks:
             return []
-        query_vector = self._embed(tokenize(query))
+        query_vector = self._embed(tokenize(query, stem=self._stem))
         query_norm = _norm(query_vector)
         if query_norm == 0.0:
             return []
-        scored: list[ScoredChunk] = []
-        for index, vector in enumerate(self._vectors):
-            similarity = _cosine(query_vector, query_norm, vector, self._norms[index])
-            if similarity > 0.0:
-                scored.append(ScoredChunk(chunk=self._chunks[index], score=similarity))
-        scored.sort(key=lambda item: item.score, reverse=True)
-        return scored[:k]
+        # Accumulate dot products over the postings of the query's terms, so only chunks
+        # sharing a term with the query are touched.
+        dots = np.zeros(len(self._chunks), dtype=np.float64)
+        for term, query_weight in query_vector.items():
+            posting = self._postings.get(term)
+            if posting is not None:
+                ids, weights = posting
+                dots[ids] += query_weight * weights
+        with np.errstate(divide="ignore", invalid="ignore"):
+            similarity = np.where(self._norms > 0.0, dots / (query_norm * self._norms), 0.0)
+        return [
+            ScoredChunk(chunk=self._chunks[doc], score=score) for doc, score in top_k(similarity, k)
+        ]
 
     def embedding_dimension(self) -> int:
         """The size of the learned vocabulary (the vector space dimension)."""
         return len(self._idf)
 
-    def _fit_idf(self) -> None:
+    def _fit_idf(self, tokenized: Sequence[Sequence[str]]) -> None:
         document_frequency: Counter[str] = Counter()
-        for chunk in self._chunks:
-            document_frequency.update(set(tokenize(chunk.text)))
+        for tokens in tokenized:
+            document_frequency.update(set(tokens))
         n = len(self._chunks)
         # Smoothed idf, always positive, so every vocabulary term carries weight.
         self._idf = {
@@ -84,13 +102,3 @@ class TfidfRetriever:
 
 def _norm(vector: Vector) -> float:
     return math.sqrt(sum(value * value for value in vector.values()))
-
-
-def _cosine(a: Vector, a_norm: float, b: Vector, b_norm: float) -> float:
-    if a_norm == 0.0 or b_norm == 0.0:
-        return 0.0
-    # Iterate over the smaller vector for efficiency.
-    if len(a) > len(b):
-        a, b = b, a
-    dot = sum(value * b.get(term, 0.0) for term, value in a.items())
-    return dot / (a_norm * b_norm)
