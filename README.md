@@ -31,11 +31,17 @@ labeled query set, and the pipelines are compared head to head in an ablation.
   <img src="docs/architecture/architecture.svg" alt="Architecture diagram" width="860">
 </p>
 
-Documents are split by a **chunker**; each chunk is indexed by **BM25** (sparse, lexical)
-and a **TF-IDF** vector retriever (sparse, with idf weights fit from the corpus). A query is
-run through both; their rankings are merged by **reciprocal rank fusion**; a **reranker**
-re-scores the fused candidates; and the whole pipeline is scored by the **evaluation
-harness** (recall@k, precision@k, MRR, nDCG). See the [ADRs](docs/adr/) for key choices.
+<sub>Legend: amber = entry points and external systems, indigo = core logic, green = data and state, blue = validation and control, grey = observability and outputs.</sub>
+
+Documents are split by a **chunker** and indexed once per named pipeline. The sparse
+retrievers are **BM25**, **TF-IDF**, character n-grams, and exact phrase matching; a
+from-scratch **neural dense retriever** ranks by cosine similarity over skip-gram word
+embeddings. A query, from the CLI or a validated `/retrieve` request, runs through the chosen
+pipeline: a single retriever, or several whose rankings are merged by **reciprocal rank
+fusion**, optionally followed by a **reranker** (lexical overlap or MMR). The **evaluation
+harness** scores every pipeline on labeled queries (recall@k, precision@k, MRR, nDCG), a paired
+bootstrap compares two pipelines, and every route records latency and errors for `/metrics`.
+See the [ADRs](docs/adr/) for key choices.
 
 ### Components
 
