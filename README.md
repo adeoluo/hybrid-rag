@@ -168,6 +168,12 @@ results = retriever.retrieve("my query", k=5)
 
 ## Usage
 
+A real run: a hybrid query with fused scores, then the retrieval ablation across eight pipelines. Regenerate with `vhs docs/demo/query.tape`.
+
+<p align="center">
+  <img src="docs/demo/query.gif" alt="hybrid-rag query and retrieval ablation" width="860">
+</p>
+
 ### HTTP service
 
 A standard-library HTTP service indexes every pipeline once at startup and serves retrieval:
