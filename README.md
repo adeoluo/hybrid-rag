@@ -1,7 +1,7 @@
 <h1 align="center">Hybrid RAG</h1>
 
 <p align="center">
-  <em>Production hybrid retrieval built from scratch: BM25 and a TF-IDF vector retriever, fused and reranked, with a rigorous retrieval evaluation suite.</em>
+  <em>Hybrid retrieval built from scratch: stemmed BM25 and TF-IDF over inverted indexes, fused and reranked, evaluated on the BEIR benchmark.</em>
 </p>
 
 <p align="center">
@@ -67,20 +67,88 @@ See the [ADRs](docs/adr/) for key choices.
 
 | Pipeline | recall@5 | precision@5 | MRR | nDCG@5 |
 |---|---:|---:|---:|---:|
-| `bm25` | 1.000 | 0.200 | 0.967 | 0.975 |
-| `tfidf` | 1.000 | 0.200 | 0.967 | 0.975 |
+| `bm25` | 1.000 | 0.200 | 0.933 | 0.951 |
+| `tfidf` | 1.000 | 0.200 | 0.933 | 0.951 |
 | `dense` | 1.000 | 0.200 | 0.933 | 0.951 |
-| `hybrid` | 1.000 | 0.200 | 0.967 | 0.975 |
-| `dense-hybrid` | 1.000 | 0.200 | 0.967 | 0.975 |
-| `reranked` | 1.000 | 0.200 | 0.967 | 0.975 |
-| `hybrid-all` | 1.000 | 0.200 | 0.967 | 0.975 |
-| `mmr` | 1.000 | 0.200 | 0.947 | 0.959 |
+| `hybrid` | 1.000 | 0.200 | 0.933 | 0.951 |
+| `dense-hybrid` | 1.000 | 0.200 | 0.933 | 0.951 |
+| `reranked` | 1.000 | 0.200 | 0.933 | 0.951 |
+| `hybrid-all` | 1.000 | 0.200 | 0.933 | 0.951 |
+| `mmr` | 1.000 | 0.200 | 0.913 | 0.935 |
 
 The pipelines are measured identically on the same labeled queries. Each query has a
 single relevant chunk, so precision@5 is capped at 0.200 (one correct result out of five
 positions) and is identical across pipelines; it is reported for completeness rather than as
 a differentiator on this corpus. Every pipeline recovers the relevant chunk (recall 1.000),
-so the differences that remain are in **ranking quality** (MRR and nDCG).
+so the differences that remain are in **ranking quality** (MRR and nDCG). This set is too small
+to separate the methods: Porter stemming, which raises BM25's nDCG@10 on the real BEIR datasets
+below, moves one of these 15 queries down a rank (MRR 0.967 before stemming, 0.933 after), which
+is why the real-data benchmark is the one to judge by.
+
+### Real benchmark: BEIR
+
+> Reproduce: download a BEIR dataset (for example
+> `https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip`), unzip it, and run
+> `uv run --with rank_bm25 python benchmarks/beir.py --data scifact --rank-bm25`.
+> nDCG@10 with graded gains and capped recall@100, as in BEIR. Apple M1, one thread. Raw numbers: `benchmarks/results/`.
+
+[BEIR](https://github.com/beir-cellar/beir) is the standard zero-shot retrieval benchmark, so these
+numbers are comparable with published ones. The published BEIR BM25 baseline (Elasticsearch) is
+**0.665** nDCG@10 on SciFact and **0.656** on TREC-COVID. `rank_bm25` (BM25Okapi) is run on the same
+tokens as an independent implementation.
+
+**SciFact**: 5,183 scientific abstracts, 300 queries.
+
+| Retriever | nDCG@10 | Recall@100 | Index build | Query |
+|---|---:|---:|---:|---:|
+| **bm25** | **0.687** | **0.928** | 0.56 s | **0.18 ms** |
+| tfidf | 0.606 | 0.926 | 0.56 s | 0.18 ms |
+| hybrid | 0.665 | 0.926 | 0.97 s | 0.88 ms |
+| reranked | 0.596 | 0.865 | 1.21 s | 1.60 ms |
+| hybrid-all | 0.615 | 0.927 | 5.92 s | 2.99 ms |
+| mmr | 0.657 | 0.865 | 0.95 s | 10.38 ms |
+| rank_bm25 BM25Okapi | 0.665 | 0.886 | 0.45 s | 13.19 ms |
+
+**TREC-COVID**: 171,331 CORD-19 papers, 50 queries with deep judgments. Peak memory for the
+whole run (corpus, all three indexes and rank_bm25) is 1.75 GB.
+
+| Retriever | nDCG@10 | Recall@100 | Index build | Query |
+|---|---:|---:|---:|---:|
+| **bm25** | **0.663** | **0.528** | 20.9 s | **2.5 ms** |
+| tfidf | 0.472 | 0.424 | 18.6 s | 2.1 ms |
+| hybrid | **0.666** | 0.522 | 34.0 s | 5.1 ms |
+| rank_bm25 BM25Okapi | 0.578 | 0.471 | 10.0 s | 514.2 ms |
+
+The machine had other applications running, so the absolute times are noisy; rows in one table
+come from the same run and compare fairly.
+
+What changed and what it bought:
+
+- **Porter stemming**, written from scratch in `core/stemming.py`. It gives the same stems as
+  NLTK's original-algorithm Porter stemmer on all 34,955 SciFact words longer than two letters.
+  It lifts BM25 from 0.669 to **0.687** nDCG@10 on SciFact and recall@100 from 0.886 to 0.928.
+  BM25 now **beats the published BEIR baseline on SciFact (0.687 against 0.665) and matches it on
+  TREC-COVID (0.663 against 0.656)**, and beats `rank_bm25` on the same tokens by 0.022 and 0.085.
+- **Inverted indexes in flat arrays** for BM25, TF-IDF, character n-grams and phrases. Each
+  term's postings are slices of two numpy arrays (chunk ids and precomputed weights), and a query
+  adds the weights of its terms into one score array, so only chunks that share a term with the
+  query are touched. With stemming off they return exactly the rankings of the old full scans
+  (checked on every SciFact query; BM25, character n-gram and phrase scores are bit for bit
+  equal). Queries got **44x faster for BM25 on SciFact** (7.98 ms to 0.18 ms), 19x for `hybrid`
+  and 27x for `hybrid-all`, and BM25 answers **about 200x faster than `rank_bm25` on
+  TREC-COVID**. The hybrid pipeline on TREC-COVID went from 731 ms to 5.1 ms per query: the old
+  per-posting Python tuples pushed the 171,000-document indexes into swap on this 8 GB machine.
+
+Where it does not win:
+
+- **Fusion does not help on these datasets.** The `hybrid` pipeline is slightly worse than BM25
+  alone on SciFact (0.665) and only ties it on TREC-COVID (0.666), because its second retriever,
+  TF-IDF, is a weaker lexical signal rather than a different one. The lexical reranker and MMR
+  hurt nDCG. A neural dense retriever trained on far more data is what fusion needs to pay off.
+- **Index build is slower than `rank_bm25`** (20.9 s against 10.0 s on TREC-COVID), mostly
+  because every word is stemmed and every posting is written out; the build runs in Python.
+- **Every result is lexical.** Learned dense retrievers and cross-encoders score higher on both
+  datasets in the BEIR leaderboard; this library does not include one.
 
 ### What the neural dense retriever shows (an honest result)
 
@@ -91,12 +159,11 @@ ranks by cosine similarity. It is the "real neural embeddings" baseline the lexi
 against.
 
 The honest finding is that on this small corpus the learned dense retriever **does not beat the
-strong lexical baselines**: it still recovers every relevant chunk (recall 1.000) but ranks it
-slightly lower on average (**MRR 0.933 versus 0.967**). This is expected and informative, not a
-bug: learning dense semantics that outranks exact lexical matching needs far more training data
-than a few short passages provide, where a single shared term is a very strong and precise
-signal. Fusing the dense retriever with the lexical ones (`dense-hybrid`) recovers the lexical
-ranking (MRR 0.967), so the dense signal does not hurt in combination. The value here is a
+lexical baselines**: it recovers every relevant chunk and ties them (MRR 0.933), and before the
+lexical retrievers gained stemming it trailed them (0.933 against 0.967). Learning dense semantics
+that outranks exact lexical matching needs far more training data than a few short passages
+provide, where a single shared term is a very strong and precise signal. Fusing it with the
+lexical ones (`dense-hybrid`) does not change the ranking here. The value here is a
 correct, measured, from-scratch implementation of dense retrieval, compared fairly against
 lexical retrieval rather than assumed to beat it. See [limitations](#limitations) for why the
 methods converge at this corpus scale.
@@ -112,17 +179,15 @@ machine (`uv run python benchmarks/scale.py`):
 
 | Chunks | Seconds | Queries/sec | Peak MiB | recall@5 |
 |---:|---:|---:|---:|---:|
-| 500 | 1.35 | 67 | 2.3 | 0.53 |
-| 1,000 | 2.04 | 45 | 4.6 | 0.38 |
-| 2,000 | 5.87 | 17 | 9.1 | 0.31 |
-| 4,000 | 10.07 | 9 | 18.3 | 0.21 |
+| 500 | 0.025 | 8,431 | 0.8 | 0.53 |
+| 1,000 | 0.046 | 6,308 | 1.6 | 0.38 |
+| 2,000 | 0.076 | 6,168 | 3.1 | 0.31 |
+| 4,000 | 0.139 | 4,209 | 6.2 | 0.21 |
 
-Throughput falls faster than linearly because fusion scores every chunk with each
-sub-retriever, and recall decays as the field of random distractors grows. These
-numbers are from synthetic data on this Python implementation (its TF-IDF is a
-classical sparse lexical retriever by design, not neural); they are **not** a
-comparison against production vector databases or compiled indexes, which would be
-far faster and are the right tool at real scale.
+Before the inverted indexes the same runs took 1.35 to 10.07 seconds at 67 to 9 queries per
+second with 2.3 to 18.3 MiB peak; throughput now falls slowly because a query only touches
+chunks that share a term with it. Recall decays as the field of random distractors grows. These
+are synthetic data; the BEIR section above is the real-data measurement.
 
 ### Performance
 
@@ -130,15 +195,16 @@ far faster and are the right tool at real scale.
 
 | Pipeline | Index build (ms) | Queries / sec |
 |---|---:|---:|
-| `bm25` | 4.5 | 1,696 |
-| `tfidf` | 8.7 | 2,241 |
-| `hybrid` | 13.2 | 940 |
-| `reranked` | 12.9 | 819 |
-| `hybrid-all` (4-way fusion) | 47.6 | 330 |
-| `mmr` (diversity) | 13.0 | 518 |
+| `bm25` | 8.4 | 23,443 |
+| `tfidf` | 8.7 | 24,301 |
+| `hybrid` | 15.4 | 7,608 |
+| `reranked` | 14.9 | 2,906 |
+| `hybrid-all` (4-way fusion) | 80.0 | 2,652 |
+| `mmr` (diversity) | 14.7 | 951 |
 
-All retrieval is in-process and in-memory, so hundreds to thousands of queries per second
-require no external service.
+All retrieval is in-process and in-memory. Against the previous full scans, query throughput is
+8 to 14 times higher (BM25 1,696 to 23,443 queries per second); index build is a few
+milliseconds slower because postings and stems are computed up front.
 
 ## Quickstart
 
@@ -218,6 +284,12 @@ The HTTP service retrieving with the hybrid pipeline.
 - **Fit the TF-IDF weights from the corpus.** The idf weights are computed at index time,
   so the retriever is corpus-specific; it is a sparse lexical method, not a neural dense embedding.
   ([ADR-0003](docs/adr/0003-tfidf-retriever.md))
+- **Inverted indexes in flat arrays, with exact parity.** Postings are two numpy arrays per
+  retriever, grouped by term, and queries add precomputed weights into a score array. The scoring
+  formulas are unchanged and the additions happen in the same order, so the rankings are the
+  ones a full scan gives. ([ADR-0004](docs/adr/0004-inverted-index-and-stemming.md))
+- **Porter stemming on by default for BM25 and TF-IDF**, because it raises nDCG@10 on real
+  data (BEIR); `stem=False` restores exact-word matching.
 - **Evaluation is a first-class component**, not an afterthought: the project ships the
   metrics and the harness, and every claim is a reproducible number.
 
@@ -247,7 +319,10 @@ Tests marked `slow` train every pipeline end to end, including the neural dense 
 - Because both retrievers are lexical, they converge on the clean bundled corpus; the
   value here is the measurement framework, which would expose differences on a harder or
   semantically-phrased query set.
-- The bundled corpus is a demonstration, not a competitive benchmark.
+- The bundled corpus is a demonstration, not a competitive benchmark; the BEIR results are the
+  real-data measurement.
+- Indexing runs in Python, so building over 171,000 documents takes about 20 seconds per
+  retriever, twice `rank_bm25`'s time, and every index lives in memory.
 
 ## Roadmap
 
