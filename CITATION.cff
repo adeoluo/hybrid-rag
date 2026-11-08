@@ -1,10 +1,22 @@
 cff-version: 1.2.0
-message: "If you use this work, please cite it."
-title: "Hybrid Rag"
+message: "If you use this software, please cite it as below."
+type: software
+title: "Hybrid RAG"
+abstract: "Hybrid retrieval from scratch: stemmed BM25 and TF-IDF over inverted indexes, reciprocal-rank fusion and reranking, evaluated on BEIR; 0.687 nDCG@10 on SciFact."
 authors:
   - family-names: "Ogunnoiki"
     given-names: "Adeolu"
-version: 0.1.0
-date-released: 2026-01-01
+version: "0.2.0"
+date-released: "2026-11-02"
 license: MIT
+repository-code: "https://github.com/adeoluo/hybrid-rag"
 url: "https://github.com/adeoluo/hybrid-rag"
+keywords:
+  - "bm25"
+  - "from-scratch"
+  - "information-retrieval"
+  - "machine-learning"
+  - "python"
+  - "rag"
+  - "retrieval-augmented-generation"
+  - "search"
