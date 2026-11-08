@@ -20,6 +20,7 @@ Languages: Python. License: MIT. Source: https://github.com/adeoluo/hybrid-rag
 - [ADR-0001: Record architecture decisions](https://github.com/adeoluo/hybrid-rag/blob/main/docs/adr/0001-record-architecture-decisions.md)
 - [ADR-0002: Reciprocal rank fusion for hybrid retrieval](https://github.com/adeoluo/hybrid-rag/blob/main/docs/adr/0002-reciprocal-rank-fusion.md)
 - [ADR-0003: A TF-IDF vector-space retriever fit from the corpus](https://github.com/adeoluo/hybrid-rag/blob/main/docs/adr/0003-tfidf-retriever.md)
+- [ADR-0004: Inverted indexes in flat arrays, and Porter stemming](https://github.com/adeoluo/hybrid-rag/blob/main/docs/adr/0004-inverted-index-and-stemming.md)
 - [ADR-NNNN: <short title>](https://github.com/adeoluo/hybrid-rag/blob/main/docs/adr/template.md)
 - [Changelog](https://github.com/adeoluo/hybrid-rag/blob/main/CHANGELOG.md): release history
 
@@ -30,7 +31,9 @@ Languages: Python. License: MIT. Source: https://github.com/adeoluo/hybrid-rag
 - [src/hybrid_rag/core/__init__.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/__init__.py): Core abstractions for hybrid retrieval.
 - [src/hybrid_rag/core/chunking.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/chunking.py): Chunking strategies: splitting documents into retrievable spans.
 - [src/hybrid_rag/core/chunking_advanced.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/chunking_advanced.py): Additional chunking strategies.
+- [src/hybrid_rag/core/postings.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/postings.py): Compact inverted-index postings and exact top-k selection.
 - [src/hybrid_rag/core/retriever.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/retriever.py): The retriever interface.
+- [src/hybrid_rag/core/stemming.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/stemming.py): The Porter stemmer (M.F.
 - [src/hybrid_rag/core/tokenization.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/tokenization.py): Text tokenization shared across retrievers.
 - [src/hybrid_rag/core/types.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/core/types.py): Core data types for retrieval.
 - [src/hybrid_rag/data/sample.py](https://github.com/adeoluo/hybrid-rag/blob/main/src/hybrid_rag/data/sample.py): A small bundled corpus and labeled query set for reproducible evaluation.

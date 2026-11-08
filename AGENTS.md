@@ -23,7 +23,9 @@ Key modules:
 - `src/hybrid_rag/core/__init__.py`: Core abstractions for hybrid retrieval.
 - `src/hybrid_rag/core/chunking.py`: Chunking strategies: splitting documents into retrievable spans.
 - `src/hybrid_rag/core/chunking_advanced.py`: Additional chunking strategies.
+- `src/hybrid_rag/core/postings.py`: Compact inverted-index postings and exact top-k selection.
 - `src/hybrid_rag/core/retriever.py`: The retriever interface.
+- `src/hybrid_rag/core/stemming.py`: The Porter stemmer (M.F.
 - `src/hybrid_rag/core/tokenization.py`: Text tokenization shared across retrievers.
 - `src/hybrid_rag/core/types.py`: Core data types for retrieval.
 - `src/hybrid_rag/data/sample.py`: A small bundled corpus and labeled query set for reproducible evaluation.

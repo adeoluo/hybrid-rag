@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/adeoluo/hybrid-rag/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/adeoluo/hybrid-rag/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/adeoluo/hybrid-rag/releases"><img alt="Release" src="https://img.shields.io/github/v/release/adeoluo/hybrid-rag"></a>
-  <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green"></a>
 </p>
 
@@ -303,7 +303,7 @@ make lint type               # ruff format check, ruff lint, mypy
 
 The suite in `tests/` covers tokenization and every chunker (`test_core.py`, `test_query_chunking.py`), each retriever including BM25, TF-IDF, character n-gram, phrase, and the from-scratch neural dense retriever (`test_retrievers.py`, `test_more_retrievers.py`, `test_dense.py`), reciprocal rank fusion, reranking, and MMR (`test_fusion_rerank.py`), the retrieval metrics and evaluation harness (`test_evaluation.py`), paired-bootstrap retriever comparison (`test_comparison.py`), RAG context assembly and chunk persistence (`test_rag_persistence.py`), the command-line interface (`test_cli.py`), and the HTTP handler layer (`test_service.py`).
 
-Tests marked `slow` train every pipeline end to end, including the neural dense retriever; they are excluded from CI and reproduced by the CLI and benchmarks. CI runs ruff format, ruff lint, mypy, and `pytest -m "not slow"` with an 80% coverage gate on Python 3.11 and 3.12, then builds the package and the Docker image.
+Tests marked `slow` train every pipeline end to end, including the neural dense retriever; they are excluded from CI and reproduced by the CLI and benchmarks. CI runs ruff format, ruff lint, mypy, and `pytest -m "not slow"` with an 80% coverage gate on Python 3.12, 3.13, 3.14 and 3.15, then builds the package and the Docker image.
 
 ## Responsible AI
 
