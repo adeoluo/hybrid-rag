@@ -15,6 +15,22 @@
 
 > **Evidence level: publicly benchmarked.** BEIR SciFact and TREC-COVID against the published BM25 baseline and rank_bm25. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
 
+## In plain English
+
+Before an AI answers from your documents, something has to find the right documents. This
+project builds that search step from scratch and, more importantly, measures whether it
+works.
+
+- **Its keyword search beats the published baseline.** 0.687 against 0.665 on SciFact, a
+  standard science test (higher is better).
+- **It is about 70 times faster than rank_bm25,** a common Python library: 0.18 ms per
+  question against 13.19 ms, with a better score.
+- **It reports a result that tutorials skip.** Mixing two search methods ("hybrid") did not
+  beat plain keyword search here (0.665 against 0.687).
+
+**Where it falls short:** there are no neural embeddings. Both search methods match words, so
+"hybrid" here means two word-based methods combined.
+
 ## Motivation
 
 Most retrieval-augmented generation tutorials import an embedding model and a vector
