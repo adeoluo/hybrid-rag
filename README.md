@@ -63,29 +63,7 @@ See the [ADRs](docs/adr/) for key choices.
 
 ## Results
 
-> Reproduce with `python -m hybrid_rag ablate`. Metrics averaged over 15 labeled queries at k=5.
-
-| Pipeline | recall@5 | precision@5 | MRR | nDCG@5 |
-|---|---:|---:|---:|---:|
-| `bm25` | 1.000 | 0.200 | 0.933 | 0.951 |
-| `tfidf` | 1.000 | 0.200 | 0.933 | 0.951 |
-| `dense` | 1.000 | 0.200 | 0.933 | 0.951 |
-| `hybrid` | 1.000 | 0.200 | 0.933 | 0.951 |
-| `dense-hybrid` | 1.000 | 0.200 | 0.933 | 0.951 |
-| `reranked` | 1.000 | 0.200 | 0.933 | 0.951 |
-| `hybrid-all` | 1.000 | 0.200 | 0.933 | 0.951 |
-| `mmr` | 1.000 | 0.200 | 0.913 | 0.935 |
-
-The pipelines are measured identically on the same labeled queries. Each query has a
-single relevant chunk, so precision@5 is capped at 0.200 (one correct result out of five
-positions) and is identical across pipelines; it is reported for completeness rather than as
-a differentiator on this corpus. Every pipeline recovers the relevant chunk (recall 1.000),
-so the differences that remain are in **ranking quality** (MRR and nDCG). This set is too small
-to separate the methods: Porter stemming, which raises BM25's nDCG@10 on the real BEIR datasets
-below, moves one of these 15 queries down a rank (MRR 0.967 before stemming, 0.933 after), which
-is why the real-data benchmark is the one to judge by.
-
-### Real benchmark: BEIR
+### Zero-shot retrieval on BEIR (SciFact and TREC-COVID)
 
 > Reproduce: download a BEIR dataset (for example
 > `https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip`), unzip it, and run
@@ -150,23 +128,13 @@ Where it does not win:
 - **Every result is lexical.** Learned dense retrievers and cross-encoders score higher on both
   datasets in the BEIR leaderboard; this library does not include one.
 
-### What the neural dense retriever shows (an honest result)
+### Offline CLI smoke fixture (`python -m hybrid_rag ablate`)
 
-The `dense` pipeline is a **from-scratch neural retriever**: it trains word embeddings with a
-skip-gram objective and negative sampling over the indexed corpus (with the training loop and
-gradients written by hand), represents each chunk and query as the mean of its word vectors, and
-ranks by cosine similarity. It is the "real neural embeddings" baseline the lexical methods are measured
-against.
-
-The honest finding is that on this small corpus the learned dense retriever **does not beat the
-lexical baselines**: it recovers every relevant chunk and ties them (MRR 0.933), and before the
-lexical retrievers gained stemming it trailed them (0.933 against 0.967). Learning dense semantics
-that outranks exact lexical matching needs far more training data than a few short passages
-provide, where a single shared term is a very strong and precise signal. Fusing it with the
-lexical ones (`dense-hybrid`) does not change the ranking here. The value here is a
-correct, measured, from-scratch implementation of dense retrieval, compared fairly against
-lexical retrieval rather than assumed to beat it. See [limitations](#limitations) for why the
-methods converge at this corpus scale.
+The bundled offline CLI (`python -m hybrid_rag ablate`) runs all eight pipelines (including a
+from-scratch skip-gram `dense` retriever) against a tiny 15-query in-package fixture so `make evaluation`
+completes in under a second without downloading BEIR (`recall@5 = 1.000`, `MRR = 0.933` across
+the lexical/hybrid variants, `0.913` for `mmr`). Because 15 short passages saturate exact
+term-matching, all real quality and speed comparisons are evaluated on the BEIR datasets above.
 
 ### Scale
 
