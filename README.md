@@ -13,6 +13,8 @@
 
 ---
 
+> **Evidence level: publicly benchmarked.** BEIR SciFact and TREC-COVID against the published BM25 baseline and rank_bm25. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
+
 ## Motivation
 
 Most retrieval-augmented generation tutorials import an embedding model and a vector
