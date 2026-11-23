@@ -15,7 +15,7 @@
 
 > **Evidence level: publicly benchmarked.** BEIR SciFact and TREC-COVID against the published BM25 baseline and rank_bm25. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
 
-## Summary
+## Highlights
 
 Before an AI answers from your documents, something has to find the right documents. This
 project builds that search step from scratch and, more importantly, measures whether it
