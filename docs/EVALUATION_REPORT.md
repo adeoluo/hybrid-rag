@@ -47,8 +47,10 @@
 
 ## 2. Offline CI regression smoke fixture (`python -m hybrid_rag ablate`)
 
-For sub-second hermetic CI checks without network downloads, `ablate` runs all pipelines on a
-14-passage / 15-query distinct-topic sanity fixture (`k = 3`). Because topics are non-overlapping,
-all four lexical variants (`bm25`, `dense` TF-IDF cosine, `hybrid` RRF, and `reranked`) converge
-to `recall@3 = 1.000`, `MRR = 0.967`, `nDCG@3 = 0.975` - verifying metric and pipeline wiring
-rather than discriminating retriever quality.
+For sub-second hermetic CI checks without network downloads, `ablate` (also `make evaluation`)
+runs all eight pipelines on a 13-document / 15-query distinct-topic sanity fixture at the default
+`k = 5`. Because topics are non-overlapping, seven of the eight pipelines converge to
+`recall@5 = 1.000`, `MRR = 0.933`, `nDCG@5 = 0.951`, and `mmr`, which trades relevance for
+diversity, scores `MRR = 0.913`, `nDCG@5 = 0.935`. The fixture verifies metric and pipeline
+wiring rather than discriminating retriever quality. `tests/test_docs_match_results.py` reruns
+it and fails if these figures or the ones in the README drift.
