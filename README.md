@@ -13,7 +13,7 @@
 
 ---
 
-> **Evidence level: publicly benchmarked.** The project is tested on two public BEIR datasets, SciFact and TREC-COVID, against the published BM25 baseline and the rank_bm25 library. No one else has reproduced the results, and the code is not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
+> **Evidence level: publicly benchmarked.** The project is tested on two public BEIR datasets, SciFact and TREC-COVID, against the published BM25 baseline and the rank_bm25 library. No one else has reproduced the results, and the code is not used in production.
 
 ## Highlights
 
